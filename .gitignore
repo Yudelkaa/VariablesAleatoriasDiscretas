@@ -1,0 +1,23 @@
+# Ignore bin and obj directories
+/bin/
+/obj/
+
+# Ignore Visual Studio files
+*.user
+*.suo
+*.userosscache
+*.vspscc
+.vs/
+
+# Ignore Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Ignore JetBrains Rider files
+.idea/
+
+# Ignore logs and other temporary files
+*.log
+*.tmp
