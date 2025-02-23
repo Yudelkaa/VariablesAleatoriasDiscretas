@@ -11,7 +11,5 @@ namespace Simulacion
         public int GrupoPersonas { get; set; }
         public string PreferenciaTamano { get; set; }
         public string Presupuesto { get; set; }
-
-
     }
 }
