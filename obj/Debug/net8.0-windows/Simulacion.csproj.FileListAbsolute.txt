@@ -1,0 +1,17 @@
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.Form1.resources
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.csproj.GenerateResource.cache
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.GeneratedMSBuildEditorConfig.editorconfig
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.AssemblyInfoInputs.cache
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.AssemblyInfo.cs
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.csproj.CoreCompileInputs.cache
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.sourcelink.json
+C:\VariablesAleatoriasDiscretas\bin\Debug\net8.0-windows\Simulacion.exe
+C:\VariablesAleatoriasDiscretas\bin\Debug\net8.0-windows\Simulacion.deps.json
+C:\VariablesAleatoriasDiscretas\bin\Debug\net8.0-windows\Simulacion.runtimeconfig.json
+C:\VariablesAleatoriasDiscretas\bin\Debug\net8.0-windows\Simulacion.dll
+C:\VariablesAleatoriasDiscretas\bin\Debug\net8.0-windows\Simulacion.pdb
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.dll
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\refint\Simulacion.dll
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.pdb
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\Simulacion.genruntimeconfig.cache
+C:\VariablesAleatoriasDiscretas\obj\Debug\net8.0-windows\ref\Simulacion.dll
