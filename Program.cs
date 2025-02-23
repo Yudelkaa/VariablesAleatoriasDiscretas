@@ -6,5 +6,11 @@ using System.Windows.Forms;
 
 namespace Simulacion
 {
-
+    public class Program
+    {
+        public static void Main()
+        {
+            Application.Run(new HotelSimulationForm());
+        }
+    }
 }
