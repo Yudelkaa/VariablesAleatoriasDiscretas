@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Simulacion
 {
-    public class HotelSimulationForm: Form
+    public class HotelSimulationForm : Form
     {
         private Button startSimulationButton;
         private ListBox resultListBox;
@@ -25,12 +25,15 @@ namespace Simulacion
         private double perdidaIngresos = 0;
         private double dineroGanado = 0;
 
+        private int cantidadEconómicas = 40;
+        private int cantidadEstándar = 40;
+        private int cantidadLujo = 20;
         public HotelSimulationForm()
         {
             this.Text = "Simulación de Hotel";
-            this.Size = new Size(600, 550);
+            this.Size = new Size(1200, 700);
 
-            startSimulationButton = new Button() { Text = "Iniciar", Location = new Point(50, 10) };
+            startSimulationButton = new Button() { Text = "Iniciar", Location = new Point(50, 10), Size = new Size(100, 30) };
             startSimulationButton.Click += StartSimulation;
 
             resultListBox = new ListBox() { Location = new Point(10, 50), Size = new Size(850, 550) };
@@ -58,16 +61,47 @@ namespace Simulacion
 
         private void InicializarHabitaciones()
         {
-            habitaciones = new List<Habitacion>
+            habitaciones = new List<Habitacion>();
+
+            for (int i = 1; i <= cantidadEconómicas; i++)
             {
-                new Habitacion { Numero = 1, Tipo = "Económica", Tamano = "Pequeña", Camas = 1 },
-                new Habitacion { Numero = 2, Tipo = "Económica", Tamano = "Pequeña", Camas = 2 },
-                new Habitacion { Numero = 3, Tipo = "Estándar", Tamano = "Mediana", Camas = 2 },
-                new Habitacion { Numero = 4, Tipo = "Estándar", Tamano = "Mediana", Camas = 3 },
-                new Habitacion { Numero = 5, Tipo = "Lujo", Tamano = "Grande", Camas = 4 }
-            };
+                habitaciones.Add(new Habitacion(i, "Económica", "Pequeña", 1, false, false, false) { Precio = 3000 });
+            }
+
+            for (int i = 1; i <= cantidadEstándar; i++)
+            {
+                habitaciones.Add(new Habitacion(i + cantidadEconómicas, "Estándar", "Mediana", 2, false, true, false) { Precio = 5500 });
+            }
+
+            for (int i = 1; i <= cantidadLujo; i++)
+            {
+                habitaciones.Add(new Habitacion(i + cantidadEconómicas + cantidadEstándar, "Lujo", "Grande", 4, true, false, true) { Precio = 12000 });
+            }
+
+            AsignarCaracteristicas();
         }
 
+        private void AsignarCaracteristicas()
+        {
+            int vistaAlMarCount = (int)(habitaciones.Count * 0.4); // 40% con vista al mar
+            int cercaDelAscensorCount = (int)(habitaciones.Count * 0.6); // 60% cerca del ascensor
+            int conBalconCount = (int)(habitaciones.Count * 0.5); // 50% con balcón
+
+            for (int i = 0; i < vistaAlMarCount; i++)
+            {
+                habitaciones[i].TieneVistaAlMar = true;
+            }
+
+            for (int i = 0; i < cercaDelAscensorCount; i++)
+            {
+                habitaciones[i].CercaAscensor = true;
+            }
+
+            for (int i = 0; i < conBalconCount; i++)
+            {
+                habitaciones[i].TieneBalcon = true;
+            }
+        }
         private void StartSimulation(object sender, EventArgs e)
         {
             step = 0;
@@ -84,13 +118,11 @@ namespace Simulacion
             {
                 simulationTimer.Stop();
                 MostrarResultados();
-                DibujarGrafico();
                 MostrarHabitacionMasSolicitada();
                 return;
             }
 
             Persona persona = GenerarPersona();
-
             Habitacion habitacion = AsignarHabitacion(persona);
             if (habitacion != null)
             {
@@ -132,60 +164,69 @@ namespace Simulacion
                 Presupuesto = random.NextDouble() < 0.7 ? "Económica" : "Estándar"
             };
         }
-
         private Habitacion AsignarHabitacion(Persona persona)
         {
-            var habitacionesDisponibles = habitaciones
-                .Where(h => h.Tamano == persona.PreferenciaTamano && h.Tipo.Contains(persona.Presupuesto))
-                .ToList();
+            double probabilidadNoHospedarse = persona.Presupuesto == "Económica" ? 0.4 : 0.2; // 40% para económico, 20% para estándar o lujo
 
-            if (habitacionesDisponibles.Any())
+            if (random.NextDouble() < probabilidadNoHospedarse)
             {
-                return habitacionesDisponibles[random.Next(habitacionesDisponibles.Count)];
-            }
+                personasNoHospedadas++;
+                double precioHabitacionNoHospedada = 0;
+                if (persona.Presupuesto == "Económica")
+                {
+                    precioHabitacionNoHospedada = habitaciones.Where(h => h.Tipo == "Económica").Min(h => h.Precio);
+                }
+                else if (persona.Presupuesto == "Estándar")
+                {
+                    precioHabitacionNoHospedada = habitaciones.Where(h => h.Tipo == "Estándar").Min(h => h.Precio);
+                }
+                else if (persona.Presupuesto == "Lujo")
+                {
+                    precioHabitacionNoHospedada = habitaciones.Where(h => h.Tipo == "Lujo").Min(h => h.Precio);
+                }
                 perdidaIngresos += precioHabitacionNoHospedada * persona.GrupoPersonas;
                 resultListBox.Items.Add($"Persona de {persona.GrupoPersonas} personas con presupuesto {persona.Presupuesto} ha decidido no hospedarse.");
+                return null;
+            }
+
+            if (persona.Presupuesto == "Lujo")
+            {
+                var habitacionesLujo = habitaciones.Where(h => h.Tipo == "Lujo").ToList();
+                if (habitacionesLujo.Any())
+                {
+                    var habitacionLujo = habitacionesLujo.First();
+                    habitacionLujo.VecesOcupada++;
+                    dineroGanado += habitacionLujo.Precio;
+                    return habitacionLujo;
+                }
+            }
+
+            var habitacionesDisponibles = habitaciones
+                .Where(h => h.Tamano == persona.PreferenciaTamano)
+                .ToList();
+
+            var habitacion = habitacionesDisponibles.FirstOrDefault();
+            if (habitacion != null)
+            {
+                habitacion.VecesOcupada++;
+                dineroGanado += habitacion.Precio;
+                return habitacion;
+            }
+
             return null;
-        }
-
-        private void MostrarResultados()
-        {
-            resultListBox.Items.Add("\nResultados finales:");
-            foreach (var habitacion in habitaciones)
-            {
-                resultListBox.Items.Add($"Habitación {habitacion.Numero} ({habitacion.Tipo} - {habitacion.Camas} camas): {habitacion.VecesOcupada} usos");
-            }
-
-            resultListBox.Items.Add($"\nResumen de la simulación:");
-            resultListBox.Items.Add($"Número de personas hospedadas: {personasHospedadas}");
-            resultListBox.Items.Add($"Número de personas no hospedadas: {personasNoHospedadas}");
-        }
-        private void DibujarGrafico()
-        {
-            Bitmap bitmap = new Bitmap(chartPictureBox.Width, chartPictureBox.Height);
-            Graphics g = Graphics.FromImage(bitmap);
-            g.Clear(Color.White);
-
-            int barWidth = chartPictureBox.Width / habitaciones.Count;
-            int maxOcupaciones = habitaciones.Max(h => h.VecesOcupada);
-
-            for (int i = 0; i < habitaciones.Count; i++)
-            {
-                int barHeight = (habitaciones[i].VecesOcupada * chartPictureBox.Height) / (maxOcupaciones + 1);
-                Brush color = habitaciones[i].Tipo == "Económica" ? Brushes.Green : (habitaciones[i].Tipo == "Estándar" ? Brushes.Orange : Brushes.Red);
-                g.FillRectangle(color, i * barWidth, chartPictureBox.Height - barHeight, barWidth - 5, barHeight);
-            }
-
-            chartPictureBox.Image = bitmap;
         }
 
         private void MostrarHabitacionMasSolicitada()
         {
-            var habitacionMasSolicitada = habitaciones.OrderByDescending(h => h.VecesOcupada).First();
-            mostPopularRoomLabel.Text = $"Habitación más solicitada: Habitación {habitacionMasSolicitada.Numero} ({habitacionMasSolicitada.Tipo}, {habitacionMasSolicitada.Camas} camas), " +
-                $"con {habitacionMasSolicitada.VecesOcupada} usos.";
+            var habitacionMasSolicitada = habitaciones.OrderByDescending(h => h.VecesOcupada).FirstOrDefault();
+            if (habitacionMasSolicitada != null)
+            {
+                mostPopularRoomLabel.Text = $"Habitación más solicitada: {habitacionMasSolicitada.Numero} ({habitacionMasSolicitada.Tipo} - {habitacionMasSolicitada.Camas} camas) con {habitacionMasSolicitada.VecesOcupada} usos";
+            }
+            else
+            {
+                mostPopularRoomLabel.Text = "No se registraron habitaciones ocupadas.";
+            }
         }
-
-
     }
 }
