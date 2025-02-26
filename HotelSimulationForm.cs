@@ -12,13 +12,18 @@ namespace Simulacion
         private ListBox resultListBox;
         private PictureBox chartPictureBox;
         private Label statsLabel;
+        private Label dineroGanadoLabel;
         private Label mostPopularRoomLabel;
+        private Label finalResultsLabel;
+        private Label lostRevenueLabel;
         private List<Habitacion> habitaciones;
         private Random random = new Random();
         private System.Windows.Forms.Timer simulationTimer;
         private int step = 0;
         private int personasHospedadas = 0;
-        private int personasNoHospedadas = 0; private Label finalResultsLabel;
+        private int personasNoHospedadas = 0;
+        private double perdidaIngresos = 0;
+        private double dineroGanado = 0;
 
         public HotelSimulationForm()
         {
@@ -28,11 +33,13 @@ namespace Simulacion
             startSimulationButton = new Button() { Text = "Iniciar", Location = new Point(50, 10) };
             startSimulationButton.Click += StartSimulation;
 
-            resultListBox = new ListBox() { Location = new Point(10, 50), Size = new Size(400, 450) };
-            chartPictureBox = new PictureBox() { Location = new Point(500, 50), Size = new Size(400, 400) };
-            statsLabel = new Label() { Location = new Point(50, 360), Size = new Size(560, 30) };
-            mostPopularRoomLabel = new Label() { Location = new Point(5, 500), Size = new Size(560, 30) };
-            finalResultsLabel = new Label() { Location = new Point(5, 530), Size = new Size(560, 30) };
+            resultListBox = new ListBox() { Location = new Point(10, 50), Size = new Size(850, 550) };
+            chartPictureBox = new PictureBox() { Location = new Point(870, 50), Size = new Size(300, 250) };
+            statsLabel = new Label() { Location = new Point(10, 610), Size = new Size(1140, 30), AutoSize = true };
+            mostPopularRoomLabel = new Label() { Location = new Point(10, 640), Size = new Size(1140, 30), AutoSize = true };
+            finalResultsLabel = new Label() { Location = new Point(10, 670), Size = new Size(1140, 30), AutoSize = true };
+            lostRevenueLabel = new Label() { Location = new Point(10, 700), Size = new Size(1140, 30), AutoSize = true };
+            dineroGanadoLabel = new Label() { Location = new Point(10, 730), Size = new Size(1140, 30), AutoSize = true };
 
             this.Controls.Add(startSimulationButton);
             this.Controls.Add(resultListBox);
@@ -40,10 +47,12 @@ namespace Simulacion
             this.Controls.Add(statsLabel);
             this.Controls.Add(mostPopularRoomLabel);
             this.Controls.Add(finalResultsLabel);
+            this.Controls.Add(lostRevenueLabel);
+            this.Controls.Add(dineroGanadoLabel);
 
             InicializarHabitaciones();
             simulationTimer = new System.Windows.Forms.Timer();
-            simulationTimer.Interval = 200; //para terminar en 20 segundos
+            simulationTimer.Interval = 200;
             simulationTimer.Tick += SimulationStep;
         }
 
@@ -65,6 +74,7 @@ namespace Simulacion
             resultListBox.Items.Clear();
             personasHospedadas = 0;
             personasNoHospedadas = 0;
+            perdidaIngresos = 0;
             simulationTimer.Start();
         }
 
@@ -86,15 +96,31 @@ namespace Simulacion
             {
                 habitacion.VecesOcupada++;
                 personasHospedadas++;
-                resultListBox.Items.Add($"Huésped de {persona.GrupoPersonas} personas con preferencia {persona.PreferenciaTamano} y presupuesto {persona.Presupuesto} asignado a habitación {habitacion.Numero} ({habitacion.Tipo}, {habitacion.Camas} camas)");
+                dineroGanado += habitacion.Precio;
+                resultListBox.Items.Add($"Huésped de {persona.GrupoPersonas} personas con preferencia {persona.PreferenciaTamano} y presupuesto {persona.Presupuesto} asignado a habitación {habitacion.Numero} ({habitacion.Tipo}, {habitacion.Camas} camas) por ${habitacion.Precio}");
             }
             else
             {
                 personasNoHospedadas++;
+                perdidaIngresos += 100;
                 resultListBox.Items.Add($"No se pudo asignar habitación al huésped de {persona.GrupoPersonas} personas");
             }
+            dineroGanadoLabel.Text = $"Dinero ganado por hospedar: ${dineroGanado}";
 
             step++;
+        }
+
+        private void MostrarResultados()
+        {
+            resultListBox.Items.Add("\nResultados finales:");
+            foreach (var habitacion in habitaciones)
+            {
+                resultListBox.Items.Add($"Habitación {habitacion.Numero} ({habitacion.Tipo} - {habitacion.Camas} camas): {habitacion.VecesOcupada} usos");
+            }
+
+            finalResultsLabel.Text = $"Número de personas hospedadas: {personasHospedadas} | Número de personas no hospedadas: {personasNoHospedadas}";
+            lostRevenueLabel.Text = $"Dinero perdido por no hospedar: ${perdidaIngresos}";
+            dineroGanadoLabel.Text = $"Dinero ganado por hospedar: ${dineroGanado}";
         }
 
         private Persona GenerarPersona()
@@ -117,7 +143,8 @@ namespace Simulacion
             {
                 return habitacionesDisponibles[random.Next(habitacionesDisponibles.Count)];
             }
-
+                perdidaIngresos += precioHabitacionNoHospedada * persona.GrupoPersonas;
+                resultListBox.Items.Add($"Persona de {persona.GrupoPersonas} personas con presupuesto {persona.Presupuesto} ha decidido no hospedarse.");
             return null;
         }
 
